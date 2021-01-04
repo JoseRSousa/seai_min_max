@@ -204,5 +204,14 @@ int main(int argc, char **argv)
   std::cout << "Min Qualisys Pitch: " << qualisys_min.pitch << " at " << qualisys_min.pitch_stamp.toSec() << "\n";
   std::cout << "Min Qualisys Yaw: " << qualisys_min.yaw << " at " << qualisys_min.yaw_stamp.toSec() << "\n";
 
+  std::cout << "\n\n\n";
+  std::cout << "Time difference (Mavros - Qualisys):\n";
+  std::cout << "Time difference for Max Roll: " << mavros_max.roll_stamp.toSec() - qualisys_max.roll_stamp.toSec() << "\n";
+  std::cout << "Time difference for Max Pitch: " << mavros_max.pitch_stamp.toSec() - qualisys_max.pitch_stamp.toSec() << "\n";
+  std::cout << "Time difference for Max Yaw: " << mavros_max.yaw_stamp.toSec() - qualisys_max.yaw_stamp.toSec() << "\n";
+  std::cout << "Time difference for Min Roll: " << mavros_min.roll_stamp.toSec() - qualisys_min.roll_stamp.toSec() << "\n";
+  std::cout << "Time difference for Min Pitch: " << mavros_min.pitch_stamp.toSec() - qualisys_min.pitch_stamp.toSec() << "\n";
+  std::cout << "Time difference for Min Yaw: " << mavros_min.yaw_stamp.toSec() - qualisys_min.yaw_stamp.toSec() << "\n";
+
   return 0;
 }
