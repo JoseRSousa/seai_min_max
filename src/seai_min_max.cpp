@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "sensor_msgs/Imu.h"
+#include "nav_msgs/Odometry.h"
 #include "tf/tf.h"
 
 typedef struct 
@@ -14,16 +15,97 @@ typedef struct
 
 ros::Time zero(0);
 
-ros::Time start_time = zero;
+ros::Time start_time_mavros = zero;
+ros::Time start_time_qualisys = zero;
 
-euler_stamped min = {};
-euler_stamped max = {};
+euler_stamped mavros_min = {};
+euler_stamped mavros_max = {};
+
+euler_stamped qualisys_min = {};
+euler_stamped qualisys_max = {};
 
 
 /*
+    Qualisys
     Calcular o minimo e máximo para roll, pitch e yaw, com a duração desde a primeira medição
 */
-void calcMinMax(const sensor_msgs::Imu::ConstPtr& msg)
+void calcMinMax_Qualisys(const nav_msgs::Odometry::ConstPtr& msg)
+{
+  tf::Quaternion q(
+        msg->pose.pose.orientation.x,
+        msg->pose.pose.orientation.y,
+        msg->pose.pose.orientation.z,
+        msg->pose.pose.orientation.w);
+    tf::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
+  if(start_time_qualisys == zero)
+  {
+    start_time_qualisys = msg->header.stamp;
+
+    qualisys_min.roll_stamp = msg->header.stamp - start_time_qualisys;
+    qualisys_min.roll = roll;
+
+    qualisys_min.roll_stamp = msg->header.stamp - start_time_qualisys;
+    qualisys_min.pitch = pitch;
+
+    qualisys_min.roll_stamp = msg->header.stamp - start_time_qualisys;
+    qualisys_min.yaw = yaw;
+
+    qualisys_max.roll_stamp = msg->header.stamp - start_time_qualisys;
+    qualisys_max.roll = roll;
+    
+    qualisys_max.pitch_stamp = msg->header.stamp - start_time_qualisys;
+    qualisys_max.pitch = pitch;
+
+    qualisys_max.yaw_stamp = msg->header.stamp - start_time_qualisys;
+    qualisys_max.yaw = yaw;
+
+  }
+  else
+  {
+    if(qualisys_max.roll < roll)
+    {
+      qualisys_max.roll = roll;
+      qualisys_max.roll_stamp = msg->header.stamp - start_time_qualisys;
+    }
+    if(qualisys_max.pitch < pitch)
+    {
+      qualisys_max.pitch = pitch;
+      qualisys_max.pitch_stamp = msg->header.stamp - start_time_qualisys;
+    }
+    if(qualisys_max.yaw < yaw)
+    {
+      qualisys_max.yaw = yaw;
+      qualisys_max.yaw_stamp = msg->header.stamp - start_time_qualisys;
+    }
+
+    if(qualisys_min.roll > roll)
+    {
+      qualisys_min.roll = roll;
+      qualisys_min.roll_stamp = msg->header.stamp - start_time_qualisys;
+    }
+    if(qualisys_min.pitch > pitch)
+    {
+      qualisys_min.pitch = pitch;
+      qualisys_min.pitch_stamp = msg->header.stamp - start_time_qualisys;
+    }
+    if(qualisys_min.yaw > yaw)
+    {
+      qualisys_min.yaw = yaw;
+      qualisys_min.yaw_stamp = msg->header.stamp - start_time_qualisys;
+    }
+  }
+
+
+}
+
+/*
+    Mavros
+    Calcular o minimo e máximo para roll, pitch e yaw, com a duração desde a primeira medição
+*/
+void calcMinMax_Mavros(const sensor_msgs::Imu::ConstPtr& msg)
 {
   tf::Quaternion q(
         msg->orientation.x,
@@ -34,61 +116,61 @@ void calcMinMax(const sensor_msgs::Imu::ConstPtr& msg)
     double roll, pitch, yaw;
     m.getRPY(roll, pitch, yaw);
 
-  if(start_time == zero)
+  if(start_time_mavros == zero)
   {
-    start_time = msg->header.stamp;
+    start_time_mavros = msg->header.stamp;
 
-    min.roll_stamp = msg->header.stamp - start_time;
-    min.roll = roll;
+    mavros_min.roll_stamp = msg->header.stamp - start_time_mavros;
+    mavros_min.roll = roll;
 
-    min.roll_stamp = msg->header.stamp - start_time;
-    min.pitch = pitch;
+    mavros_min.roll_stamp = msg->header.stamp - start_time_mavros;
+    mavros_min.pitch = pitch;
 
-    min.roll_stamp = msg->header.stamp - start_time;
-    min.yaw = yaw;
+    mavros_min.roll_stamp = msg->header.stamp - start_time_mavros;
+    mavros_min.yaw = yaw;
 
-    max.roll_stamp = msg->header.stamp - start_time;
-    max.roll = roll;
+    mavros_max.roll_stamp = msg->header.stamp - start_time_mavros;
+    mavros_max.roll = roll;
     
-    max.pitch_stamp = msg->header.stamp - start_time;
-    max.pitch = pitch;
+    mavros_max.pitch_stamp = msg->header.stamp - start_time_mavros;
+    mavros_max.pitch = pitch;
 
-    max.yaw_stamp = msg->header.stamp - start_time;
-    max.yaw = yaw;
+    mavros_max.yaw_stamp = msg->header.stamp - start_time_mavros;
+    mavros_max.yaw = yaw;
     
   }
   else
   {
-    if(max.roll < roll)
+    if(mavros_max.roll < roll)
     {
-      max.roll = roll;
-      max.roll_stamp = msg->header.stamp - start_time;
+      mavros_max.roll = roll;
+      mavros_max.roll_stamp = msg->header.stamp - start_time_mavros;
     }
-    if(max.pitch < pitch)
+    if(mavros_max.pitch < pitch)
     {
-      max.pitch = pitch;
-      max.pitch_stamp = msg->header.stamp - start_time;
+      mavros_max.pitch = pitch;
+      mavros_max.pitch_stamp = msg->header.stamp - start_time_mavros;
     }
-    if(max.yaw < yaw)
+    if(mavros_max.yaw < yaw)
     {
-      max.yaw = yaw;
-      max.yaw_stamp = msg->header.stamp - start_time;
+      mavros_max.yaw = yaw;
+      mavros_max.yaw_stamp = msg->header.stamp - start_time_mavros;
     }
 
-    if(min.roll > roll)
+    if(mavros_min.roll > roll)
     {
-      min.roll = roll;
-      min.roll_stamp = msg->header.stamp - start_time;
+      mavros_min.roll = roll;
+      mavros_min.roll_stamp = msg->header.stamp - start_time_mavros;
     }
-    if(min.pitch > pitch)
+    if(mavros_min.pitch > pitch)
     {
-      min.pitch = pitch;
-      min.pitch_stamp = msg->header.stamp - start_time;
+      mavros_min.pitch = pitch;
+      mavros_min.pitch_stamp = msg->header.stamp - start_time_mavros;
     }
-    if(min.yaw > yaw)
+    if(mavros_min.yaw > yaw)
     {
-      min.yaw = yaw;
-      min.yaw_stamp = msg->header.stamp - start_time;
+      mavros_min.yaw = yaw;
+      mavros_min.yaw_stamp = msg->header.stamp - start_time_mavros;
     }
   }
   
@@ -96,57 +178,31 @@ void calcMinMax(const sensor_msgs::Imu::ConstPtr& msg)
 
 int main(int argc, char **argv)
 {
-  /**
-   * The ros::init() function needs to see argc and argv so that it can perform
-   * any ROS arguments and name remapping that were provided at the command line.
-   * For programmatic remappings you can use a different version of init() which takes
-   * remappings directly, but for most command-line programs, passing argc and argv is
-   * the easiest way to do it.  The third argument to init() is the name of the node.
-   *
-   * You must call one of the versions of ros::init() before using any other
-   * part of the ROS system.
-   */
-  ros::init(argc, argv, "listener");
+  ros::init(argc, argv, "seai_min_max");
 
-  /**
-   * NodeHandle is the main access point to communications with the ROS system.
-   * The first NodeHandle constructed will fully initialize this node, and the last
-   * NodeHandle destructed will close down the node.
-   */
-  ros::NodeHandle n;
+  ros::NodeHandle nMavros;
+  ros::NodeHandle nQualisys;
 
-  /**
-   * The subscribe() call is how you tell ROS that you want to receive messages
-   * on a given topic.  This invokes a call to the ROS
-   * master node, which keeps a registry of who is publishing and who
-   * is subscribing.  Messages are passed to a callback function, here
-   * called calcMinMax.  subscribe() returns a Subscriber object that you
-   * must hold on to until you want to unsubscribe.  When all copies of the Subscriber
-   * object go out of scope, this callback will automatically be unsubscribed from
-   * this topic.
-   *
-   * The second parameter to the subscribe() function is the size of the message
-   * queue.  If messages are arriving faster than they are being processed, this
-   * is the number of messages that will be buffered up before beginning to throw
-   * away the oldest ones.
-   */
-  ros::Subscriber sub = n.subscribe("/mavros/imu/data", 1000, calcMinMax);
+  ros::Subscriber subMavros = nMavros.subscribe("/mavros/imu/data", 1000, calcMinMax_Mavros);
+  ros::Subscriber subQualisys = nQualisys.subscribe("/qualisys/ROV/odom", 1000, calcMinMax_Qualisys);
 
-  /**
-   * ros::spin() will enter a loop, pumping callbacks.  With this version, all
-   * callbacks will be called from within this thread (the main one).  ros::spin()
-   * will exit when Ctrl-C is pressed, or the node is shutdown by the master.
-   */
   ros::spin();
   
   // Imprimir os resultados quando fecharmos este node
   std::cout << "\n";
-  std::cout << "Max Roll: " << max.roll << " at " << max.roll_stamp.toSec() << "\n";
-  std::cout << "Max Pitch: " << max.pitch << " at " << max.pitch_stamp.toSec() << "\n";
-  std::cout << "Max Yaw: " << max.yaw << " at " << max.yaw_stamp.toSec() << "\n";
-  std::cout << "Min Roll: " << min.roll << " at " << min.roll_stamp.toSec() << "\n";
-  std::cout << "Min Pitch: " << min.pitch << " at " << min.pitch_stamp.toSec() << "\n";
-  std::cout << "Min Yaw: " << min.yaw << " at " << min.yaw_stamp.toSec() << "\n";
+  std::cout << "Max Mavros Roll: " << mavros_max.roll << " at " << mavros_max.roll_stamp.toSec() << "\n";
+  std::cout << "Max Mavros Pitch: " << mavros_max.pitch << " at " << mavros_max.pitch_stamp.toSec() << "\n";
+  std::cout << "Max Mavros Yaw: " << mavros_max.yaw << " at " << mavros_max.yaw_stamp.toSec() << "\n";
+  std::cout << "Min Mavros Roll: " << mavros_min.roll << " at " << mavros_min.roll_stamp.toSec() << "\n";
+  std::cout << "Min Mavros Pitch: " << mavros_min.pitch << " at " << mavros_min.pitch_stamp.toSec() << "\n";
+  std::cout << "Min Mavros Yaw: " << mavros_min.yaw << " at " << mavros_min.yaw_stamp.toSec() << "\n";
+
+  std::cout << "Max Qualisys Roll: " << qualisys_max.roll << " at " << qualisys_max.roll_stamp.toSec() << "\n";
+  std::cout << "Max Qualisys Pitch: " << qualisys_max.pitch << " at " << qualisys_max.pitch_stamp.toSec() << "\n";
+  std::cout << "Max Qualisys Yaw: " << qualisys_max.yaw << " at " << qualisys_max.yaw_stamp.toSec() << "\n";
+  std::cout << "Min Qualisys Roll: " << qualisys_min.roll << " at " << qualisys_min.roll_stamp.toSec() << "\n";
+  std::cout << "Min Qualisys Pitch: " << qualisys_min.pitch << " at " << qualisys_min.pitch_stamp.toSec() << "\n";
+  std::cout << "Min Qualisys Yaw: " << qualisys_min.yaw << " at " << qualisys_min.yaw_stamp.toSec() << "\n";
 
   return 0;
 }
