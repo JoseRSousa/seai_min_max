@@ -47,10 +47,10 @@ void calcMinMax_Qualisys(const nav_msgs::Odometry::ConstPtr& msg)
     qualisys_min.roll_stamp = msg->header.stamp - start_time_qualisys;
     qualisys_min.roll = roll;
 
-    qualisys_min.roll_stamp = msg->header.stamp - start_time_qualisys;
+    qualisys_min.pitch_stamp = msg->header.stamp - start_time_qualisys;
     qualisys_min.pitch = pitch;
 
-    qualisys_min.roll_stamp = msg->header.stamp - start_time_qualisys;
+    qualisys_min.yaw_stamp = msg->header.stamp - start_time_qualisys;
     qualisys_min.yaw = yaw;
 
     qualisys_max.roll_stamp = msg->header.stamp - start_time_qualisys;
@@ -123,10 +123,10 @@ void calcMinMax_Mavros(const sensor_msgs::Imu::ConstPtr& msg)
     mavros_min.roll_stamp = msg->header.stamp - start_time_mavros;
     mavros_min.roll = roll;
 
-    mavros_min.roll_stamp = msg->header.stamp - start_time_mavros;
+    mavros_min.pitch_stamp = msg->header.stamp - start_time_mavros;
     mavros_min.pitch = pitch;
 
-    mavros_min.roll_stamp = msg->header.stamp - start_time_mavros;
+    mavros_min.yaw_stamp = msg->header.stamp - start_time_mavros;
     mavros_min.yaw = yaw;
 
     mavros_max.roll_stamp = msg->header.stamp - start_time_mavros;
@@ -205,7 +205,7 @@ int main(int argc, char **argv)
   std::cout << "Min Qualisys Yaw: " << qualisys_min.yaw << " at " << qualisys_min.yaw_stamp.toSec() << "\n";
 
   std::cout << "\n\n\n";
-  std::cout << "Time difference (Mavros - Qualisys):\n";
+  std::cout << "Time difference (Mavros - Qualisys) in s:\n";
   std::cout << "Time difference for Max Roll: " << mavros_max.roll_stamp.toSec() - qualisys_max.roll_stamp.toSec() << "\n";
   std::cout << "Time difference for Max Pitch: " << mavros_max.pitch_stamp.toSec() - qualisys_max.pitch_stamp.toSec() << "\n";
   std::cout << "Time difference for Max Yaw: " << mavros_max.yaw_stamp.toSec() - qualisys_max.yaw_stamp.toSec() << "\n";
